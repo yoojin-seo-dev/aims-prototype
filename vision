@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIMS SaaS — Vision / Issues</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; font-size: 13px; color: #1a2332; }
+
+  /* ── FAR LEFT TAB RAIL ── */
+  .tab-rail {
+    width: 38px; background: #070f1c; display: flex; flex-direction: column;
+    align-items: center; padding: 14px 0; gap: 2px; flex-shrink: 0; z-index: 10;
+  }
+  .tab-item {
+    writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg);
+    font-size: 9.5px; font-weight: 700; color: #3a5272; padding: 10px 5px;
+    cursor: pointer; letter-spacing: 0.6px; border-radius: 4px; transition: all 0.2s;
+    white-space: nowrap; text-transform: uppercase;
+  }
+  .tab-item.active { color: #e2eaf4; background: rgba(255,255,255,0.08); }
+  .tab-item:hover:not(.active) { color: #7094b8; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 192px; background: #0d1f35; display: flex; flex-direction: column;
+    flex-shrink: 0; overflow-y: auto; padding-bottom: 24px;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #1e3550; border-radius: 2px; }
+
+  .logo-area {
+    padding: 15px 16px 13px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 4px;
+  }
+  .logo-text { font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 9.5px; color: #4a6a8a; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+
+  .nav-group-label {
+    padding: 12px 16px 4px; font-size: 9.5px; font-weight: 700;
+    color: #2e4a66; letter-spacing: 0.8px; text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px; cursor: pointer; color: #7090b0; font-size: 12.5px;
+    font-weight: 500; transition: all 0.15s; gap: 8px;
+  }
+  .nav-item:hover { color: #c0d4ea; background: rgba(255,255,255,0.04); }
+  .nav-item .nav-left { display: flex; align-items: center; gap: 8px; }
+  .nav-item .icon { font-size: 13px; flex-shrink: 0; width: 16px; text-align: center; }
+  .nav-item .arrow { font-size: 8px; color: #3a5272; transition: transform 0.2s; }
+  .nav-item.open .arrow { transform: rotate(180deg); color: #6090b0; }
+  .nav-item.active-parent { color: #e0ecfa; }
+
+  .submenu { background: rgba(0,0,0,0.18); }
+  .sub-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7.5px 16px 7.5px 34px; cursor: pointer; color: #5a7898;
+    font-size: 12px; font-weight: 400; transition: all 0.15s;
+    border-left: 2px solid transparent; position: relative;
+  }
+  .sub-item:hover { color: #b8d0ea; background: rgba(255,255,255,0.04); }
+  .sub-item.active {
+    color: #ffffff; font-weight: 600;
+    border-left: 2px solid #4a9eff;
+    background: linear-gradient(90deg, rgba(74,158,255,0.12) 0%, transparent 100%);
+  }
+  .sub-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .sub-item.active .sub-dot { background: #4a9eff; width: 5px; height: 5px; }
+
+  .nav-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 6px 14px; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* TOPBAR */
+  .topbar {
+    background: #ffffff; border-bottom: 1px solid #e4e9f0;
+    padding: 0 24px; height: 46px; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0; gap: 16px;
+  }
+  .breadcrumb { display: flex; align-items: center; gap: 5px; color: #94a3b8; font-size: 11.5px; }
+  .breadcrumb .sep { color: #c8d4e0; }
+  .breadcrumb .current { color: #334155; font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .store-label { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px 10px; font-size: 11px; color: #64748b; white-space: nowrap; }
+  .lang-btn { font-size: 11.5px; color: #64748b; cursor: pointer; }
+  .avatar { width: 28px; height: 28px; background: #0d1f35; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11.5px; font-weight: 700; }
+
+  /* CONTENT */
+  .content { flex: 1; overflow-y: auto; padding: 22px 24px; }
+  .content::-webkit-scrollbar { width: 5px; }
+  .content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .page-title-wrap { display: flex; align-items: center; gap: 10px; }
+  .page-icon {
+    width: 34px; height: 34px; background: #0d1f35; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .page-h1 { font-size: 19px; font-weight: 800; color: #0d1f35; line-height: 1.2; }
+  .page-desc { font-size: 11.5px; color: #64748b; margin-top: 2px; }
+  .header-btn {
+    padding: 7px 14px; border: 1px solid #d1d9e0; background: #fff;
+    border-radius: 7px; font-size: 12px; font-weight: 500; color: #475569;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .header-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+
+  /* SUMMARY CARDS */
+  .summary-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
+  }
+  .summary-card {
+    background: #fff; border-radius: 10px; padding: 13px 15px;
+    border: 1.5px solid #e4e9f0; cursor: pointer; transition: all 0.18s;
+    position: relative; overflow: hidden;
+  }
+  .summary-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0;
+  }
+  .summary-card.s-urgent::after { background: #ef4444; }
+  .summary-card.s-warning::after { background: #f97316; }
+  .summary-card.s-low::after { background: #3b82f6; }
+  .summary-card.s-total::after { background: #8b5cf6; }
+  .summary-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .summary-card.active-card { transform: translateY(-1px); }
+  .summary-card.s-urgent.active-card { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  .summary-card.s-warning.active-card { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+  .summary-card.s-low.active-card { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .summary-card.s-total.active-card { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); }
+  .s-label { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+  .s-count { font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+  .summary-card.s-urgent .s-count { color: #ef4444; }
+  .summary-card.s-warning .s-count { color: #f97316; }
+  .summary-card.s-low .s-count { color: #3b82f6; }
+  .summary-card.s-total .s-count { color: #8b5cf6; }
+  .s-desc { font-size: 10.5px; color: #94a3b8; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    background: #fff; border: 1px solid #e4e9f0; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .search-input-wrap { position: relative; flex: 1; min-width: 180px; }
+  .search-input-wrap input {
+    width: 100%; padding: 7px 12px 7px 30px; border: 1px solid #e2e8f0;
+    border-radius: 7px; font-size: 12.5px; color: #334155; outline: none;
+    background: #f8fafc; transition: all 0.15s;
+  }
+  .search-input-wrap input:focus { border-color: #4a9eff; background: #fff; box-shadow: 0 0 0 3px rgba(74,158,255,0.1); }
+  .search-ico { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 12px; }
+  .vdivider { width: 1px; height: 22px; background: #e4e9f0; flex-shrink: 0; }
+  .fsel {
+    padding: 7px 26px 7px 10px; border: 1px solid #e2e8f0; border-radius: 7px;
+    font-size: 12px; color: #475569; background: #f8fafc; outline: none;
+    cursor: pointer; appearance: none; font-family: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .sort-label { font-size: 11.5px; color: #64748b; white-space: nowrap; font-weight: 500; }
+
+  /* LIST HEADER */
+  .list-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .list-title { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; }
+  .list-count { font-size: 11.5px; color: #94a3b8; }
+
+  /* TASK CARD */
+  .task-list { display: flex; flex-direction: column; gap: 7px; }
+  .task-card {
+    background: #fff; border-radius: 10px; border: 1.5px solid #e4e9f0;
+    padding: 13px 16px; display: flex; align-items: center; gap: 12px;
+    transition: all 0.15s;
+  }
+  .task-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-color: #c8d5e8; }
+  .task-card.tc-urgent { border-left: 4px solid #ef4444; padding-left: 13px; }
+  .task-card.tc-warning { border-left: 4px solid #f97316; padding-left: 13px; }
+  .task-card.tc-low     { border-left: 4px solid #3b82f6; padding-left: 13px; }
+  .task-card.tc-mis     { border-left: 4px solid #eab308; padding-left: 13px; }
+
+  .thumb-box {
+    width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0;
+    background: #f1f5f9; border: 1px solid #e2e8f0;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .p-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 5px;
+    white-space: nowrap; flex-shrink: 0; letter-spacing: 0.2px;
+  }
+  .pb-urgent { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+  .pb-warning { background: #fff7ed; color: #f97316; border: 1px solid #fed7aa; }
+  .pb-low     { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+  .t-name { font-size: 14px; font-weight: 700; color: #0f172a; }
+  .t-tag { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .tt-oos { background: #fef2f2; color: #dc2626; }
+  .tt-low { background: #eff6ff; color: #2563eb; }
+  .tt-mis { background: #fefce8; color: #b45309; }
+  .task-row2 { display: flex; align-items: center; gap: 14px; }
+  .t-loc { font-size: 11.5px; color: #64748b; }
+  .t-loc::before { content: "📍 "; font-size: 11px; }
+  .t-dur { font-size: 11.5px; display: flex; align-items: center; gap: 3px; }
+  .t-dur::before { content: "⏱ "; font-size: 11px; }
+  .dur-urgent { color: #ef4444; font-weight: 700; }
+  .dur-normal { color: #94a3b8; }
+
+  .task-actions { display: flex; gap: 5px; flex-shrink: 0; }
+  .abtn {
+    padding: 6px 11px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; font-family: inherit;
+  }
+  .abtn-done { background: #10b981; color: #fff; }
+  .abtn-done:hover { background: #059669; }
+  .abtn-ignore { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+  .abtn-ignore:hover { background: #e8f0f8; }
+  .abtn-detail { background: transparent; color: #3b82f6; border: 1.5px solid #bfdbfe; }
+  .abtn-detail:hover { background: #eff6ff; }
+
+  .done-overlay {
+    display: none; position: absolute; inset: 0; background: rgba(16,185,129,0.06);
+    border-radius: 9px; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #059669;
+  }
+
+  /* BOTTOM BAR */
+  .bottom-bar {
+    height: 48px; background: #fff; border-top: 1px solid #e4e9f0;
+    padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .exp-btn {
+    padding: 6px 14px; background: #0d1f35; color: #fff; border: none;
+    border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 5px; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .exp-btn:hover { background: #1a3550; }
+  .pagi { display: flex; align-items: center; gap: 4px; }
+  .pagi-info { font-size: 11.5px; color: #64748b; margin-right: 6px; }
+  .pbtn {
+    width: 28px; height: 28px; border: 1px solid #e2e8f0; border-radius: 5px;
+    background: #fff; color: #64748b; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s; font-family: inherit;
+  }
+  .pbtn:hover:not(.pactive) { background: #f1f5f9; }
+  .pbtn.pactive { background: #0d1f35; color: #fff; border-color: #0d1f35; font-weight: 700; }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 24px; width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-size: 15px; font-weight: 700; color: #0d1f35; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.6; }
+  .modal-product { background: #f8fafc; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+  .modal-product .mp-name { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
+  .modal-product .mp-loc { font-size: 12px; color: #64748b; }
+  .modal-reason label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 6px; }
+  .modal-reason select {
+    width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 7px;
+    font-size: 12.5px; color: #334155; outline: none; font-family: inherit; margin-bottom: 16px;
+  }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .mbtn {
+    padding: 8px 16px; border-radius: 7px; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; border: none; font-family: inherit; transition: all 0.15s;
+  }
+  .mbtn-cancel { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .mbtn-cancel:hover { background: #e8f0f8; }
+  .mbtn-confirm { background: #0d1f35; color: #fff; }
+  .mbtn-confirm:hover { background: #1a3550; }
+
+  /* TRANSITION */
+  .task-card.removing {
+    opacity: 0; max-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important;
+    margin: 0 !important; border: none !important; overflow: hidden;
+    transition: all 0.35s ease;
+  }
+</style>
+</head>
+<body>
+
+<!-- TAB RAIL -->
+<div class="tab-rail">
+  <div class="tab-item">ESL</div>
+  <div class="tab-item active">LCD</div>
+  <div class="tab-item">Map Editor</div>
+  <div class="tab-item">Config</div>
+  <div class="tab-item">SAA</div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo-area">
+    <div class="logo-text">Aims SaaS</div>
+    <div class="logo-sub">Store Management</div>
+  </div>
+
+  <!-- Vision -->
+  <div style="padding-top:6px;">
+    <div class="nav-item active-parent open" onclick="toggleMenu(this)">
+      <div class="nav-left">
+        <span class="icon">📷</span>
+        <span>Vision</span>
+      </div>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="setActive(this)">
+        <div class="sub-dot"></div><span>Overview</span>
+      </div>
+      <div class="sub-item active" onclick="setActive(this)">
+        <div class="sub-dot"></div><span>Issues</span>
+      </div>
+      <div class="sub-item" onclick="setActive(this)">
+        <div class="sub-dot"></div><span>Shelves</span>
+      </div>
+      <div class="sub-item" onclick="setActive(this)">
+        <div class="sub-dot"></div><span>Settings</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-item" onclick="toggleMenu(this)">
+      <div class="nav-left"><span class="icon">⚡</span><span>Multifunction</span></div>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="nav-item" onclick="toggleMenu(this)">
+      <div class="nav-left"><span class="icon">💾</span><span>Firmware</span></div>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="nav-item" onclick="toggleMenu(this)">
+      <div class="nav-left"><span class="icon">📡</span><span>Sensors</span></div>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="nav-item" onclick="toggleMenu(this)">
+      <div class="nav-left"><span class="icon">🗺️</span><span>Smart Map</span></div>
+      <span class="arrow">▼</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="breadcrumb">
+      <span>SDM</span><span class="sep">›</span>
+      <span>KOREA</span><span class="sep">›</span>
+      <span>KYEONGGI</span><span class="sep">›</span>
+      <span>YONGIN</span><span class="sep">›</span>
+      <span class="current">SOLDAM (SDM)</span>
+    </div>
+    <div class="topbar-right">
+      <div class="store-label">SDM KOREA KYEONGGI YONGIN (SOLDAM:SDM)</div>
+      <div class="lang-btn">🌐 English</div>
+      <div class="avatar">Y</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-title-wrap">
+        <div class="page-icon">🚨</div>
+        <div>
+          <div class="page-h1">Issues</div>
+          <div class="page-desc">처리가 필요한 선반 이슈 목록 · 오늘 기준</div>
+        </div>
+      </div>
+      <button class="header-btn">⚙ 캡처 스케줄 설정</button>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-row">
+      <div class="summary-card s-urgent active-card" onclick="filterBy('urgent', this)">
+        <div class="s-label">🔴 긴급</div>
+        <div class="s-count" id="cnt-urgent">8</div>
+        <div class="s-desc">OOS · 2시간 이상 미처리</div>
+      </div>
+      <div class="summary-card s-warning" onclick="filterBy('warning', this)">
+        <div class="s-label">🟠 주의</div>
+        <div class="s-count" id="cnt-warning">24</div>
+        <div class="s-desc">OOS · 1시간 미만</div>
+      </div>
+      <div class="summary-card s-low" onclick="filterBy('low', this)">
+        <div class="s-label">🔵 낮음</div>
+        <div class="s-count" id="cnt-low">34</div>
+        <div class="s-desc">Low Stock / Misplaced</div>
+      </div>
+      <div class="summary-card s-total" onclick="filterBy('all', this)">
+        <div class="s-label">📋 전체</div>
+        <div class="s-count" id="cnt-total">66</div>
+        <div class="s-desc">Open 상태 전체</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <span class="search-ico">🔍</span>
+        <input type="text" placeholder="상품명으로 검색..." oninput="searchTasks(this.value)">
+      </div>
+      <div class="vdivider"></div>
+      <select class="fsel">
+        <option>전체 층</option>
+        <option>1F</option>
+        <option>2F</option>
+      </select>
+      <select class="fsel">
+        <option>전체 타입</option>
+        <option>Out of Stock</option>
+        <option>Low Stock</option>
+        <option>Misplaced</option>
+      </select>
+      <div class="vdivider"></div>
+      <span class="sort-label">정렬</span>
+      <select class="fsel">
+        <option>⬆ 긴급도순</option>
+        <option>⏱ 경과시간순</option>
+        <option>📍 위치순</option>
+      </select>
+    </div>
+
+    <!-- LIST HEADER -->
+    <div class="list-header">
+      <span class="list-title">이슈 목록</span>
+      <span class="list-count" id="list-count-label">총 66건 · 1–10 표시 중</span>
+    </div>
+
+    <!-- TASK LIST -->
+    <div class="task-list" id="task-list">
+
+      <div class="task-card tc-urgent" data-type="urgent" data-name="코로노 소다" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🥤</div>
+        <span class="p-badge pb-urgent">긴급</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">코로노 소다</span>
+            <span class="t-tag tt-oos">Out of Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A03-002</span>
+            <span class="t-dur dur-urgent">2시간 28분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '코로노 소다', '1F · A03-002')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-urgent" data-type="urgent" data-name="코로노 망고" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🥭</div>
+        <span class="p-badge pb-urgent">긴급</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">코로노 망고</span>
+            <span class="t-tag tt-oos">Out of Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A03-002</span>
+            <span class="t-dur dur-urgent">2시간 28분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '코로노 망고', '1F · A03-002')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-urgent" data-type="urgent" data-name="국희고소한방콩샌드" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🍘</div>
+        <span class="p-badge pb-urgent">긴급</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">국희고소한방콩샌드</span>
+            <span class="t-tag tt-oos">Out of Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A04-001</span>
+            <span class="t-dur dur-urgent">2시간 25분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '국희고소한방콩샌드', '1F · A04-001')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-urgent" data-type="urgent" data-name="다이제샌드" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🍪</div>
+        <span class="p-badge pb-urgent">긴급</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">다이제샌드</span>
+            <span class="t-tag tt-oos">Out of Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A04-002</span>
+            <span class="t-dur dur-urgent">2시간 25분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '다이제샌드', '1F · A04-002')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-warning" data-type="warning" data-name="에이스 218g" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🍬</div>
+        <span class="p-badge pb-warning">주의</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">에이스 218g</span>
+            <span class="t-tag tt-oos">Out of Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A04-002</span>
+            <span class="t-dur dur-normal">48분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '에이스 218g', '1F · A04-002')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-low" data-type="low" data-name="하이슈 버라이어티" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🍭</div>
+        <span class="p-badge pb-low">낮음</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">하이슈 버라이어티</span>
+            <span class="t-tag tt-low">Low Stock</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A03-002</span>
+            <span class="t-dur dur-normal">2시간 28분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '하이슈 버라이어티', '1F · A03-002')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+      <div class="task-card tc-mis" data-type="low" data-name="해피베리다구아즈8p" style="max-height:200px;transition:all 0.35s ease;position:relative;">
+        <div class="thumb-box">🍡</div>
+        <span class="p-badge pb-low">낮음</span>
+        <div class="task-body">
+          <div class="task-row1">
+            <span class="t-name">해피베리다구아즈8p</span>
+            <span class="t-tag tt-mis">Misplaced</span>
+          </div>
+          <div class="task-row2">
+            <span class="t-loc">1F · A04-001</span>
+            <span class="t-dur dur-normal">1시간 12분째 미처리</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="abtn abtn-done" onclick="completeTask(this)">✓ 보충 완료</button>
+          <button class="abtn abtn-ignore" onclick="openIgnoreModal(this, '해피베리다구아즈8p', '1F · A04-001')">무시</button>
+          <button class="abtn abtn-detail">상세 보기</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="exp-btn">⬇ Export</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <select class="fsel" style="font-size:11px;padding:5px 22px 5px 8px;">
+        <option>10행씩 보기</option>
+        <option>20행씩 보기</option>
+        <option>50행씩 보기</option>
+      </select>
+      <div class="pagi">
+        <span class="pagi-info">1 – 10 / 66건</span>
+        <button class="pbtn">«</button>
+        <button class="pbtn">‹</button>
+        <button class="pbtn pactive">1</button>
+        <button class="pbtn">2</button>
+        <button class="pbtn">3</button>
+        <button class="pbtn" style="border:none;background:none;cursor:default;color:#94a3b8;">…</button>
+        <button class="pbtn">7</button>
+        <button class="pbtn">›</button>
+        <button class="pbtn">»</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- IGNORE MODAL -->
+<div class="modal-overlay" id="ignoreModal">
+  <div class="modal">
+    <h3>이슈 무시</h3>
+    <p>이 이슈를 무시하면 처리 완료로 간주됩니다.<br>무시 사유를 선택해 주세요.</p>
+    <div class="modal-product">
+      <div class="mp-name" id="modal-product-name">코로노 소다</div>
+      <div class="mp-loc" id="modal-product-loc">📍 1F · A03-002</div>
+    </div>
+    <div class="modal-reason">
+      <label>무시 사유</label>
+      <select id="ignore-reason">
+        <option>재고 보충 예정 (직접 확인)</option>
+        <option>오감지로 판단됨</option>
+        <option>판매 종료 상품</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal()">취소</button>
+      <button class="mbtn mbtn-confirm" onclick="confirmIgnore()">무시 확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let pendingIgnoreCard = null;
+
+  function toggleMenu(el) {
+    el.classList.toggle('open');
+  }
+  function setActive(el) {
+    document.querySelectorAll('.sub-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function filterBy(type, card) {
+    document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active-card'));
+    card.classList.add('active-card');
+    document.querySelectorAll('.task-card').forEach(tc => {
+      if (type === 'all') {
+        tc.style.display = 'flex';
+      } else {
+        tc.style.display = tc.dataset.type === type ? 'flex' : 'none';
+      }
+    });
+  }
+
+  function searchTasks(val) {
+    const q = val.toLowerCase();
+    document.querySelectorAll('.task-card').forEach(tc => {
+      tc.style.display = tc.dataset.name && tc.dataset.name.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+  }
+
+  function completeTask(btn) {
+    const card = btn.closest('.task-card');
+    btn.textContent = '✓ 완료됨';
+    btn.style.background = '#d1fae5';
+    btn.style.color = '#065f46';
+    btn.disabled = true;
+    card.style.opacity = '0.45';
+    setTimeout(() => {
+      card.style.maxHeight = '0';
+      card.style.paddingTop = '0';
+      card.style.paddingBottom = '0';
+      card.style.marginBottom = '0';
+      card.style.border = 'none';
+      card.style.overflow = 'hidden';
+    }, 500);
+  }
+
+  function openIgnoreModal(btn, name, loc) {
+    pendingIgnoreCard = btn.closest('.task-card');
+    document.getElementById('modal-product-name').textContent = name;
+    document.getElementById('modal-product-loc').textContent = '📍 ' + loc;
+    document.getElementById('ignoreModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('ignoreModal').classList.remove('show');
+    pendingIgnoreCard = null;
+  }
+
+  function confirmIgnore() {
+    if (pendingIgnoreCard) {
+      pendingIgnoreCard.style.opacity = '0.3';
+      setTimeout(() => {
+        pendingIgnoreCard.style.maxHeight = '0';
+        pendingIgnoreCard.style.paddingTop = '0';
+        pendingIgnoreCard.style.paddingBottom = '0';
+        pendingIgnoreCard.style.border = 'none';
+        pendingIgnoreCard.style.overflow = 'hidden';
+      }, 300);
+    }
+    closeModal();
+  }
+
+  // Close modal on overlay click
+  document.getElementById('ignoreModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+</body>
+</html>
